@@ -33,16 +33,40 @@ grafana:
   # -- Must match `sidecar.dashboards.labelValue` value for the [Grafana chart](https://github.com/grafana/helm-charts/tree/main/charts/grafana#grafana-helm-chart)
   dashboardsConfigMapLabelValue: ""
 
-
 heimdall:
   # -- Enable creation of `StatefulSet` for Heimdall
   enabled: true
+
+  replicas: 1
+
   image:
     # -- Image for Heimdall
     repository: maticnetwork/heimdall
     pullPolicy: IfNotPresent
     tag: "v0.3.0" # Don't forget to update appVersion in Chart.yaml
 
+  p2pNodePort:
+    # -- Expose P2P port via NodePort
+    enabled: true
+    # -- NodePort to be used
+    port: 31004
+    initContainer:
+      image:
+        # -- Container image to fetch nodeport information
+        repository: lachlanevenson/k8s-kubectl
+        # -- Container tag
+        tag: v1.21.3
+        # -- Container pull policy
+        pullPolicy: IfNotPresent
+    portForwardContainer:
+      image:
+        # -- Container image for the port forwarder
+        repository: alpine/socat
+        # -- Container tag
+        tag: latest
+        # -- Container pull policy
+        pullPolicy: IfNotPresent
+ 
   # -- Options for Heimdall rest-server sidecar
   restServer:
     extraArgs: []
@@ -82,11 +106,15 @@ heimdall:
     # runAsGroup: 101337
     # fsGroup: 101337
 
-  service:
-    type: ClusterIP
-    ports:
-      http-trpc: 26657
-      http-rest: 1317
+  # -- HTTP Port
+  httpPort: 26657
+
+  # -- Heimdall Rest  Port
+  
+  httpRest: 1317
+  # -- Metrics Port
+  metricsPort: 26660
+
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious

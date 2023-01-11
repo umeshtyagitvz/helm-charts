@@ -64,3 +64,20 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "heimdall.p2pPort" -}}
+{{- if .Values.heimdall.p2pNodePort.enabled }}
+{{- print .Values.heimdall.p2pNodePort.port }}
+{{- else }}
+{{- printf "31001" -}}
+{{- end }}
+{{- end -}}
+
+{{- define "heimdall.replicas" -}}
+{{- if .Values.p2pNodePort.enabled }}
+{{- print 1 }}
+{{ else }}
+{{- print .Values.heimdall.replicas }}
+{{- end}}
+{{- end -}}
+

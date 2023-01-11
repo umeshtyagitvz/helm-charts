@@ -10,7 +10,7 @@ metadata:
     {{- $componentLabel | nindent 4 }}
 spec:
   serviceName: {{ include "heimdall.fullname" . }}-{{ $componentName }}-headless
-  replicas: {{ $values.replicaCount | default 1 }}
+  replicas: {{ $values.replicas | default 1 }}
   selector:
     matchLabels:
       {{- include "heimdall.selectorLabels" . | nindent 6 }}
@@ -43,10 +43,43 @@ spec:
       volumes:
         - name: tmp # this is to provide a writable /tmp even with securityContext.readOnlyRootFilesystem=true
           emptyDir: {}
+        {{- if $values.p2pNodePort.enabled }}
+        - name: env-nodeport
+          emptyDir: {}
+        {{- end }}
         - name: genesis-config
           configMap:
             name: {{ include "heimdall.fullname" . }}-{{ $componentName }}
       initContainers:
+        {{- if $values.p2pNodePort.enabled }}
+        - name: init-nodeport
+          image: "{{ $values.p2pNodePort.initContainer.image.repository }}:{{ $values.p2pNodePort.initContainer.image.tag }}"
+          imagePullPolicy: {{$values.p2pNodePort.initContainer.image.pullPolicy }}
+          securityContext:
+            runAsNonRoot: false
+            runAsUser: 0
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          command:
+            - sh
+            - -c
+            - >
+              export EXTERNAL_PORT=$(kubectl get services -l "pod in (${POD_NAME}), type in (p2p)" -o jsonpath='{.items[0].spec.ports[0].nodePort}');
+              export EXTERNAL_IP=$(kubectl get nodes "${NODE_NAME}" -o jsonpath='{.status.addresses[?(@.type=="ExternalIP")].address}');
+              echo "EXTERNAL_PORT=$EXTERNAL_PORT" >  /env/init-nodeport;
+              echo "EXTERNAL_IP=$EXTERNAL_IP"     >> /env/init-nodeport;
+              cat /env/init-nodeport;
+          volumeMounts:
+            - name: env-nodeport
+              mountPath: /env
+        {{- end }}
         - name: {{ $componentName }}-init
           image: "{{ $values.image.repository }}:{{ $values.image.tag }}"
           imagePullPolicy: {{ $values.image.pullPolicy }}
@@ -95,6 +128,10 @@ spec:
                 fi
               fi
           volumeMounts:
+            {{- if $values.p2pNodePort.enabled }}
+            - name: env-nodeport
+              mountPath: /env
+            {{- end }}
             - name: storage
               mountPath: /storage
             - name: genesis-config
@@ -129,26 +166,31 @@ spec:
               set -x
 
               export HEIMDALL_DIR=/storage
-
+              {{- if $values.p2pNodePort.enabled }}
+                . /env/init-nodeport;
+              {{- end }}
               exec heimdalld start \
                 {{- range $arg := $values.extraArgs }}
                   {{- $arg  | nindent 16 }} \
                 {{- end }}
                 --home=$HEIMDALL_DIR \
                 --rpc.laddr=tcp://0.0.0.0:26657 \
-                --p2p.upnp=false
+                --p2p.upnp=false \
+              {{- if $values.p2pNodePort.enabled }}
+                --p2p.laddr=tcp://$EXTERNAL_IP:$EXTERNAL_PORT
+              {{- end }}
           ports:
             - name: http-trpc # Tendermint RPC
-              containerPort: 26657
+              containerPort: {{ $values.httpPort }}
               protocol: TCP
             - name: udp-p2p
-              containerPort: 26656
+              containerPort: {{ include "heimdall.p2pPort" . }}
               protocol: UDP
             - name: tcp-p2p
-              containerPort: 26656
+              containerPort: {{ include "heimdall.p2pPort" . }}
               protocol: TCP
             - name: http-metrics
-              containerPort: 26660
+              containerPort: {{ $values.metricsPort }}
               protocol: TCP
           volumeMounts:
             - name: storage
@@ -202,7 +244,7 @@ spec:
             #   containerPort: 6060
             #   protocol: TCP
             - name: http-rest
-              containerPort: 1317
+              containerPort: {{ $values.httpRest }}
               protocol: TCP
           volumeMounts:
             - name: storage

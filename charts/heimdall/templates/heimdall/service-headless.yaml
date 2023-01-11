@@ -2,6 +2,7 @@
 {{- $componentName := "heimdall" }}
 {{- $componentLabel := include "heimdall.componentLabelFor" $componentName }}
 {{- if $values.enabled }}
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -9,7 +10,7 @@ metadata:
   labels:
     {{- include "heimdall.labels" . | nindent 4 }}
 spec:
-  type: ClusterIP
+  clusterIP: None
   ports:
     - port: {{ include "heimdall.p2pPort" . }}
       targetPort: p2p-tcp
@@ -36,5 +37,4 @@ spec:
   {{- end }}
   selector:
     {{- include "heimdall.selectorLabels" . | nindent 4 }}
-    {{- $componentLabel | nindent 4 }}
 {{- end }}

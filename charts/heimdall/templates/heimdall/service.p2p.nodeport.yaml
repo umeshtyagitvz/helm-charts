@@ -1,0 +1,32 @@
+{{- $values := $.Values.heimdall }}
+{{- $componentName := "heimdall" }}
+{{- $componentLabel := include "heimdall.componentLabelFor" $componentName }}
+{{- if $values.p2pNodePort.enabled -}}
+{{- $port := $values.p2pNodePort.port -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "heimdall.fullname" $ }}-p2p-0
+  labels:
+    {{- include "heimdall.labels" $ | nindent 4 }}
+    pod: {{ include "heimdall.fullname" $ }}-0
+    type: p2p
+spec:
+  type: NodePort
+  externalTrafficPolicy: Local
+  ports:
+    - name: p2p-tcp
+      port: {{ include "heimdall.p2pPort" $ }}
+      protocol: TCP
+      targetPort: p2p-tcp
+      nodePort: {{ $port }}
+    - name: p2p-udp
+      port: {{ include "heimdall.p2pPort" $ }}
+      protocol: UDP
+      targetPort: p2p-udp
+      nodePort: {{ $port }}
+  selector:
+    {{- include "heimdall.selectorLabels" $ | nindent 4 }}
+    statefulset.kubernetes.io/pod-name: "{{ include "heimdall.fullname" $ }}-0"
+{{- end }}
