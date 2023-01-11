@@ -47,7 +47,7 @@ heimdall:
 
   p2pNodePort:
     # -- Expose P2P port via NodePort
-    enabled: true
+    enabled: false
     # -- NodePort to be used
     port: 31004
     initContainer:
@@ -108,9 +108,7 @@ heimdall:
 
   # -- HTTP Port
   httpPort: 26657
-
   # -- Heimdall Rest  Port
-  
   httpRest: 1317
   # -- Metrics Port
   metricsPort: 26660
