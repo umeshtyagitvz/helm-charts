@@ -1,0 +1,11 @@
+{{- $values := $.Values.heimdall }}
+{{- if $values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "heimdall.serviceAccountName" . }}
+  labels:
+    {{- include "heimdall.labels" . | nindent 4 }}
+rules:
+{{- toYaml $values.rbac.rules | nindent 0 }}
+{{- end }}
