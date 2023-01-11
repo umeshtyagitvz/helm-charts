@@ -80,7 +80,26 @@ heimdall:
     enabled: false
     # -- URL to snapshot to download and extract, see [here](https://snapshots.matic.today)
     snapshotUrl:
-
+  persistence:
+    # -- Uses an EmptyDir when not enabled
+    enabled: false
+    # -- Use an existing PVC when persistence.enabled
+    existingClaim: null
+    # -- Access mode for the volume claim template
+    accessModes:
+    - ReadWriteOnce
+    # -- Requested size for volume claim template
+    size: 20Gi
+    # -- Use a specific storage class
+    # E.g 'local-path' for local storage to achieve best performance
+    # Read more (https://github.com/rancher/local-path-provisioner)
+    storageClassName: null
+    # -- Annotations for volume claim template
+    annotations: {}
+    # -- Selector for volume claim template
+    selector: {}
+    #   matchLabels:
+    #     app.kubernetes.io/name: something
   # -- Environment variables to set in key/value format
   env:
     BOOTNODES: ""  
