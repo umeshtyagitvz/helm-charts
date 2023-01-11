@@ -6,7 +6,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "heimdall.fullname" . }}-{{ $componentName }}-headless
+  name: {{ include "heimdall.fullname" . }}-headless
   labels:
     {{- include "heimdall.labels" . | nindent 4 }}
 spec:

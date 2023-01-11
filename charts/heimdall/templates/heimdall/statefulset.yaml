@@ -4,12 +4,12 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "heimdall.fullname" . }}-{{ $componentName }}
+  name: {{ include "heimdall.fullname" . }}
   labels:
     {{- include "heimdall.labels" . | nindent 4 }}
     {{- $componentLabel | nindent 4 }}
 spec:
-  serviceName: {{ include "heimdall.fullname" . }}-{{ $componentName }}-headless
+  serviceName: {{ include "heimdall.fullname" . }}-headless
   replicas: {{ $values.replicas | default 1 }}
   selector:
     matchLabels:

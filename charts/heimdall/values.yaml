@@ -73,7 +73,7 @@ heimdall:
 
   p2pNodePort:
     # -- Expose P2P port via NodePort
-    enabled: false
+    enabled: true
     # -- NodePort to be used
     port: 31004
     initContainer:
