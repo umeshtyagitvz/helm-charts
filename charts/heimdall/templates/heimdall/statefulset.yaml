@@ -158,17 +158,17 @@ spec:
                 --rpc.laddr=tcp://0.0.0.0:26657 \
                 --p2p.upnp=false \
               {{- if $values.p2pNodePort.enabled }}
-                --p2p.laddr=tcp://$EXTERNAL_IP:$EXTERNAL_PORT
+                --p2p.laddr=tcp://0.0.0.0:$EXTERNAL_PORT
               {{- end }}
           ports:
-            - name: http-trpc # Tendermint RPC
-              containerPort: {{ $values.httpPort }}
+            - name: p2p-tcp
+              containerPort: {{ include "heimdall.p2pPort" . }}
               protocol: TCP
-            - name: udp-p2p
+            - name: p2p-udp
               containerPort: {{ include "heimdall.p2pPort" . }}
               protocol: UDP
-            - name: tcp-p2p
-              containerPort: {{ include "heimdall.p2pPort" . }}
+            - name: http-trpc # Tendermint RPC
+              containerPort: {{ $values.httpPort }}
               protocol: TCP
             - name: http-metrics
               containerPort: {{ $values.metricsPort }}

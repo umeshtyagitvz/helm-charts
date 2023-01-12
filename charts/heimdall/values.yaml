@@ -115,7 +115,7 @@ heimdall:
     accessModes:
     - ReadWriteOnce
     # -- Requested size for volume claim template
-    size: 20Gi
+    size: 256Gi
     # -- Use a specific storage class
     # E.g 'local-path' for local storage to achieve best performance
     # Read more (https://github.com/rancher/local-path-provisioner)
@@ -133,17 +133,6 @@ heimdall:
 
   # -- Annotations for the `Pod`
   podAnnotations: {}
-
-  # -- [PersistentVolumeClaimSpec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.23/#persistentvolumeclaimspec-v1-core) for heimdall storage
-  volumeClaimSpec:
-    accessModes: ["ReadWriteOnce"]
-    # -- The storage class to use when provisioning a persistent volume for heimdall
-    storageClassName: 
-    resources:
-      requests:
-        # -- The amount of disk space to provision for Heimdall
-        storage: 256Gi
-
   # -- Pod-wide security context
   podSecurityContext:
     runAsNonRoot: false
