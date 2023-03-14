@@ -176,7 +176,7 @@ spec:
                 --rpc.laddr=tcp://0.0.0.0:26657 \
                 --p2p.upnp=false \
               {{- if $values.p2pNodePort.enabled }}
-                --p2p.laddr=tcp://0.0.0.0:$EXTERNAL_PORT
+                --p2p.laddr=tcp://0.0.0.0:$EXTERNAL_PORT \
                 --p2p.external_address=tcp://$EXTERNAL_IP:$EXTERNAL_PORT
               {{- end }}
           ports:
